@@ -21,6 +21,11 @@ type OpenVoteRequest struct {
 	SignatureHex string `json:"signature_hex"`
 }
 
+type OpenVoteResponse struct {
+	Candidate *votingserver.Candidate `json:"candidate"`
+	Results   map[string]int64        `json:"results"`
+}
+
 type PublishVoteRequest struct {
 	ServerId string `json:"server_id" form:"server_id" binding:"required"`
 }

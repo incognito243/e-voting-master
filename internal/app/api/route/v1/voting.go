@@ -95,13 +95,16 @@ func (a *Voting) openVote(c *gin.Context) {
 		return
 	}
 
-	voteResult, err := a.votingService.EndVote(ctx, params.AdminId, params.ServerId, params.SignatureHex)
+	candidate, voteResult, err := a.votingService.EndVote(ctx, params.AdminId, params.ServerId, params.SignatureHex)
 	if err != nil {
 		response.RespondError(c, 500, err.Error())
 		return
 	}
 
-	response.RespondSuccess(c, voteResult)
+	response.RespondSuccess(c, &dto.OpenVoteResponse{
+		Candidate: candidate,
+		Results:   voteResult,
+	})
 }
 
 func (a *Voting) publishVote(c *gin.Context) {
