@@ -1,0 +1,45 @@
+server:
+  api_bind_address: ":8080"
+  mode: debug
+  admin_api_key: 123456
+
+db:
+  host: localhost
+  port: 15433
+  user: postgres
+  password: postgres
+  dbname: e_voting_master
+  ssl_mode: disable
+  conn_life_time: 300
+  max_idle_conns: 10
+  max_open_conns: 80
+  log_level: 1
+
+redis:
+  init_address:
+    - localhost:16379
+  select_db:
+  username:
+  password:
+  disable_cache: true
+
+log:
+  level: 0
+
+http_client:
+  retry_count: 3
+  retry_wait_time_seconds: 5
+  retry_max_wait_time_seconds: 30
+
+voting_core:
+  base_url: http://localhost:8000
+  api_key: 123456
+
+jwt:
+  secret_key: thesis_2025
+  expire_time: 86400
+
+password_key: 9c7034a4324cfad82ec3ec8430b0f0c26c98a6012f35ad4b34fa2aaf8811303f
+
+account:
+  private_key_name: executor_private_key
