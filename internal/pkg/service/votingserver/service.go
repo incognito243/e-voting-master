@@ -175,6 +175,10 @@ func (s *Service) GetVotingServerByID(ctx context.Context, serverId string) (*Ex
 	}
 
 	candidates, err := s.candidateRepo.GetByServerID(ctx, serverId)
+	if err != nil {
+		logger.Errorf(ctx, "GetVotingServerByID: failed to get candidates by server ID: %v", err)
+		return nil, err
+	}
 	listCandidates := make([]*Candidate, 0, len(candidates))
 	for _, candidate := range candidates {
 		listCandidates = append(listCandidates, &Candidate{

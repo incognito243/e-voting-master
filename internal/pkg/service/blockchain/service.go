@@ -166,6 +166,9 @@ func (s *Service) GetResults() ([]*Result, error) {
 	}
 
 	bytesResults, err := json.Marshal(views)
+	if err != nil {
+		return nil, err
+	}
 	var results []*Result
 
 	if err := json.Unmarshal(bytesResults, &results); err != nil {
@@ -187,6 +190,9 @@ func (s *Service) WinningCandidate() (string, error) {
 	}
 
 	bytesResults, err := json.Marshal(views)
+	if err != nil {
+		return "", err
+	}
 	var results StringResult
 
 	if err := json.Unmarshal(bytesResults, &results); err != nil {
