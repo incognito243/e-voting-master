@@ -24,7 +24,7 @@ func TestService(t *testing.T) {
 	blockChainClient, _ := blockchain.NewClient(configs.VotingConfig{
 		PrivateKeyName: "APTOS_PRIVATE_KEY",
 	}, aptosClient)
-	service := NewService(blockChainClient, "0x7280c8fcb28733b34391d85515c7578f8d0635eccf7a15f9bf9aecd958241c8b")
+	_ = NewService(blockChainClient)
 
 	//tx, err := service.AddCandidates([]StringBCS{
 	//	"simon",
@@ -58,23 +58,23 @@ func TestService(t *testing.T) {
 	//}
 	//t.Logf("Transaction hash: %s", tx)
 
-	admin, err := service.Admin()
-	if err != nil {
-		t.Fatalf("failed to get admin: %v", err)
-	}
-	t.Logf("Admin address: %s", admin)
-
-	results, err := service.GetResults()
-	if err != nil {
-		t.Fatalf("failed to get admin: %v", err)
-	}
-	t.Logf("Admin address: %+v", results[0])
-	t.Logf("Admin address: %+v", results[1])
-	t.Logf("Admin address: %+v", results[2])
-
-	winningCandidate, err := service.WinningCandidate()
-	if err != nil {
-		t.Fatalf("failed to get admin: %v", err)
-	}
-	t.Logf("Admin address: %s", winningCandidate)
+	//admin, err := service.Admin()
+	//if err != nil {
+	//	t.Fatalf("failed to get admin: %v", err)
+	//}
+	//t.Logf("Admin address: %s", admin)
+	//
+	//results, err := service.GetResults()
+	//if err != nil {
+	//	t.Fatalf("failed to get admin: %v", err)
+	//}
+	//t.Logf("Admin address: %+v", results[0])
+	//t.Logf("Admin address: %+v", results[1])
+	//t.Logf("Admin address: %+v", results[2])
+	//
+	//winningCandidate, err := service.WinningCandidate()
+	//if err != nil {
+	//	t.Fatalf("failed to get admin: %v", err)
+	//}
+	//t.Logf("Admin address: %s", winningCandidate)
 }

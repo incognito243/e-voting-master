@@ -65,7 +65,7 @@ func InitComponents() error {
 	if err != nil {
 		return err
 	}
-	blockchainSrv.NewService(blockChainClient, configs.G.Voting.ContractAddress)
+	blockchainSrv.NewService(blockChainClient)
 	user.NewService(coreClient, userRepo, candidateRepo, votingServer)
 	votingserver.NewService(votingServer, candidateRepo, userRepo, coreClient)
 	return nil

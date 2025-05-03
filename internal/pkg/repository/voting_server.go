@@ -49,25 +49,28 @@ func (v *VotingServerRepo) GetByAdminId(ctx context.Context, adminId string) ([]
 	return votingServers, nil
 }
 
-func (v *VotingServerRepo) OpenVote(ctx context.Context, serverId string, results string) error {
+func (v *VotingServerRepo) OpenVote(ctx context.Context, serverId string, results string) (*entity.VotingServer, error) {
+	var votingServer entity.VotingServer
 	err := v.db.WithContext(ctx).
 		Model(&entity.VotingServer{}).
 		Where("server_id = ?", serverId).
 		Updates(map[string]interface{}{
 			"opened_vote": true,
 			"results":     results,
-		}).
-		Error
+		}).Error
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	if err := v.db.WithContext(ctx).Where("server_id = ?", serverId).First(&votingServer).Error; err != nil {
+		return nil, err
+	}
+	return &votingServer, nil
 }
 
-func (v *VotingServerRepo) ActiveServer(ctx context.Context, serverId string) error {
+func (v *VotingServerRepo) ActiveServer(ctx context.Context, serverName string) error {
 	err := v.db.WithContext(ctx).
 		Model(&entity.VotingServer{}).
-		Where("server_id = ?", serverId).
+		Where("server_name = ?", serverName).
 		Update("active", true).Error
 	if err != nil {
 		return err

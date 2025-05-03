@@ -23,6 +23,7 @@ func NewUserApi() *UserApi {
 func (a *UserApi) SetupRoute(rg *gin.RouterGroup) {
 	rg.POST("/login", a.login)
 	rg.GET("/", a.getByUsername)
+	rg.GET("/all", a.getAll)
 	rg.GET("/citizen_id", a.getByCitizenID)
 	rg.POST("/voting", a.voting)
 }
@@ -56,6 +57,18 @@ func (a *UserApi) createUser(c *gin.Context) {
 	}
 
 	response.RespondSuccess(c, nil)
+}
+
+func (a *UserApi) getAll(c *gin.Context) {
+	ctx := c
+	
+	userInfo, err := a.userService.GetAllUsers(ctx)
+	if err != nil {
+		response.RespondError(c, 500, err.Error())
+		return
+	}
+
+	response.RespondSuccess(c, userInfo)
 }
 
 func (a *UserApi) login(c *gin.Context) {

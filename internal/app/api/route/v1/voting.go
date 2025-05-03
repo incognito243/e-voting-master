@@ -47,6 +47,7 @@ func (a *Voting) createServer(c *gin.Context) {
 		NumberOfCandidates:    params.NumberOfCandidates,
 		MaximumNumberOfVoters: params.MaximumNumberOfVoters,
 		ServerName:            params.ServerName,
+		ContractAddress:       params.ContractAddress,
 	}, params.Candidates, params.SignatureHex)
 	if err != nil {
 		response.RespondError(c, 500, err.Error())
@@ -95,7 +96,7 @@ func (a *Voting) openVote(c *gin.Context) {
 		return
 	}
 
-	candidate, voteResult, err := a.votingService.EndVote(ctx, params.AdminId, params.ServerId, params.SignatureHex)
+	candidate, voteResult, err := a.votingService.EndVote(ctx, params.AdminId, params.ServerName, params.ServerId, params.SignatureHex)
 	if err != nil {
 		response.RespondError(c, 500, err.Error())
 		return
@@ -134,7 +135,7 @@ func (a *Voting) activeServer(c *gin.Context) {
 		return
 	}
 
-	err := a.votingService.ActiveVoting(ctx, params.AdminId, params.ServerId, params.SignatureHex)
+	err := a.votingService.ActiveVoting(ctx, params.AdminId, params.ServerName, params.SignatureHex)
 	if err != nil {
 		response.RespondError(c, 500, err.Error())
 		return

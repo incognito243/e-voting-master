@@ -6,8 +6,8 @@ type Voting struct {
 }
 
 type Admin struct {
-	AdminId  string
-	ServerId string
+	AdminId    string
+	ServerName string
 }
 
 type VotingCandidate struct {
@@ -16,4 +16,9 @@ type VotingCandidate struct {
 
 type ApproveUsers struct {
 	AdminId string
+}
+
+type CreateServer struct {
+	AdminId    string
+	ServerName string
 }

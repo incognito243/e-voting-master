@@ -10,7 +10,7 @@ import (
 const (
 	verifyMessageTemplate      = `Vote From: {{.Username}} is voting in server {{.ServerId}}`
 	votingMessageTemplate      = `Vote For: user is voting for {{.CandidateIndex}}`
-	adminVerifyMessageTemplate = `Admin: {{.AdminId}} is acting in server {{.ServerId}}`
+	adminVerifyMessageTemplate = `Admin: {{.AdminId}} is acting in server {{.ServerName}}`
 	approveUserTemplate        = `Approve User: {{.AdminId}} is approving users`
 )
 
@@ -33,15 +33,15 @@ func BuildVerifyMessage(username, serverId string) (string, error) {
 	return buf.String(), nil
 }
 
-func BuildAdminVerifyMessage(adminId, serverId string) (string, error) {
+func BuildAdminVerifyMessage(adminId, serverName string) (string, error) {
 	tmpl, err := template.New("Vote").Parse(adminVerifyMessageTemplate)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %v", err)
 	}
 
 	data := Admin{
-		AdminId:  adminId,
-		ServerId: serverId,
+		AdminId:    adminId,
+		ServerName: serverName,
 	}
 
 	var buf bytes.Buffer

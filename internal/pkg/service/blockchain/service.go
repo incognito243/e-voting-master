@@ -11,25 +11,14 @@ import (
 
 type Service struct {
 	aptosClient blockchain.IClient
-	module      aptos.ModuleId
 }
 
 var service *Service
 
-func NewService(aptosClient blockchain.IClient, hex string) *Service {
+func NewService(aptosClient blockchain.IClient) *Service {
 	if service == nil {
-		address := aptos.AccountAddress{}
-		err := address.ParseStringRelaxed(hex)
-		if err != nil {
-			panic(err)
-		}
 		service = &Service{
 			aptosClient: aptosClient,
-			module: aptos.ModuleId{
-				// TODO: replace with configs
-				Address: address,
-				Name:    NameContract,
-			},
 		}
 	}
 	return service
@@ -39,7 +28,7 @@ func Instance() *Service {
 	return service
 }
 
-func (s *Service) Vote(hexAddress string, index uint64) (string, error) {
+func (s *Service) Vote(hexAddress string, index uint64, contract string) (string, error) {
 	address := HexToAddress(hexAddress)
 	bytesAddress, err := bcs.Serialize(&address)
 	if err != nil {
@@ -51,9 +40,14 @@ func (s *Service) Vote(hexAddress string, index uint64) (string, error) {
 		return "", err
 	}
 
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return "", err
+	}
+
 	tx, err := s.aptosClient.SendTransaction(aptos.TransactionPayload{
 		Payload: &aptos.EntryFunction{
-			Module:   s.module,
+			Module:   module,
 			Function: FunctionVote,
 			ArgTypes: nil,
 			Args: [][]byte{
@@ -67,7 +61,7 @@ func (s *Service) Vote(hexAddress string, index uint64) (string, error) {
 	return tx, err
 }
 
-func (s *Service) AddCandidates(candidates []string) (string, error) {
+func (s *Service) AddCandidates(candidates []string, contract string) (string, error) {
 	var bscCandidates []StringBCS
 	for _, candidate := range candidates {
 		bscCandidates = append(bscCandidates, StringBCS(candidate))
@@ -77,9 +71,14 @@ func (s *Service) AddCandidates(candidates []string) (string, error) {
 		return "", err
 	}
 
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return "", err
+	}
+
 	tx, err := s.aptosClient.SendTransaction(aptos.TransactionPayload{
 		Payload: &aptos.EntryFunction{
-			Module:   s.module,
+			Module:   module,
 			Function: FunctionAddCandidates,
 			ArgTypes: nil,
 			Args:     [][]byte{bytes},
@@ -90,10 +89,15 @@ func (s *Service) AddCandidates(candidates []string) (string, error) {
 	return tx, err
 }
 
-func (s *Service) EndVote() (string, error) {
+func (s *Service) EndVote(contract string) (string, error) {
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return "", err
+	}
+
 	tx, err := s.aptosClient.SendTransaction(aptos.TransactionPayload{
 		Payload: &aptos.EntryFunction{
-			Module:   s.module,
+			Module:   module,
 			Function: FunctionEndVote,
 			ArgTypes: nil,
 			Args:     nil,
@@ -104,10 +108,14 @@ func (s *Service) EndVote() (string, error) {
 	return tx, err
 }
 
-func (s *Service) StartVote() (string, error) {
+func (s *Service) StartVote(contract string) (string, error) {
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return "", err
+	}
 	tx, err := s.aptosClient.SendTransaction(aptos.TransactionPayload{
 		Payload: &aptos.EntryFunction{
-			Module:   s.module,
+			Module:   module,
 			Function: FunctionStartVote,
 			ArgTypes: nil,
 			Args:     nil,
@@ -118,16 +126,21 @@ func (s *Service) StartVote() (string, error) {
 	return tx, err
 }
 
-func (s *Service) GiveRightToVote(hexAddress string) (string, error) {
+func (s *Service) GiveRightToVote(hexAddress string, contract string) (string, error) {
 	address := HexToAddress(hexAddress)
 	bytesAddress, err := bcs.Serialize(&address)
 	if err != nil {
 		return "", err
 	}
 
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return "", err
+	}
+
 	tx, err := s.aptosClient.SendTransaction(aptos.TransactionPayload{
 		Payload: &aptos.EntryFunction{
-			Module:   s.module,
+			Module:   module,
 			Function: FunctionGiveRightToVote,
 			ArgTypes: nil,
 			Args: [][]byte{
@@ -140,9 +153,14 @@ func (s *Service) GiveRightToVote(hexAddress string) (string, error) {
 	return tx, err
 }
 
-func (s *Service) Admin() (string, error) {
+func (s *Service) Admin(contract string) (string, error) {
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return "", err
+	}
+
 	views, err := s.aptosClient.View(&aptos.ViewPayload{
-		Module:   s.module,
+		Module:   module,
 		Function: ViewAdmin,
 		ArgTypes: nil,
 		Args:     nil,
@@ -154,9 +172,14 @@ func (s *Service) Admin() (string, error) {
 	return views.(string), nil
 }
 
-func (s *Service) GetResults() ([]*Result, error) {
+func (s *Service) GetResults(contract string) ([]*Result, error) {
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return nil, err
+	}
+
 	views, err := s.aptosClient.View(&aptos.ViewPayload{
-		Module:   s.module,
+		Module:   module,
 		Function: ViewGetResults,
 		ArgTypes: nil,
 		Args:     nil,
@@ -178,9 +201,14 @@ func (s *Service) GetResults() ([]*Result, error) {
 	return results, nil
 }
 
-func (s *Service) WinningCandidate() (string, error) {
+func (s *Service) WinningCandidate(contract string) (string, error) {
+	module, err := s.getModuleId(contract)
+	if err != nil {
+		return "", err
+	}
+
 	views, err := s.aptosClient.View(&aptos.ViewPayload{
-		Module:   s.module,
+		Module:   module,
 		Function: ViewWinningCandidate,
 		ArgTypes: nil,
 		Args:     nil,
@@ -200,4 +228,16 @@ func (s *Service) WinningCandidate() (string, error) {
 	}
 
 	return string(results), nil
+}
+
+func (s *Service) getModuleId(hex string) (aptos.ModuleId, error) {
+	address := aptos.AccountAddress{}
+	err := address.ParseStringRelaxed(hex)
+	if err != nil {
+		return aptos.ModuleId{}, err
+	}
+	return aptos.ModuleId{
+		Address: address,
+		Name:    NameContract,
+	}, nil
 }

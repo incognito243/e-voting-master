@@ -41,5 +41,12 @@ jwt:
 
 password_key: 9c7034a4324cfad82ec3ec8430b0f0c26c98a6012f35ad4b34fa2aaf8811303f
 
-account:
+voting:
   private_key_name: executor_private_key
+  contract_address: 0x34351c16cc019f5ca576d7d3828c646e66168c9b79c97955003fb6e9c75ef1e6
+
+aptos:
+  name: testnet
+  chain_id: 2
+  node_url: https://fullnode.testnet.aptoslabs.com/v1
+  indexer_url: https://api.testnet.aptoslabs.com/v1/graphql

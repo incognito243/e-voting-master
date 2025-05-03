@@ -23,8 +23,8 @@ type IVotingServerRepo interface {
 	GetByServerID(ctx context.Context, serverId string) (*entity.VotingServer, error)
 	GetAll(ctx context.Context) ([]*entity.VotingServer, error)
 	GetByAdminId(ctx context.Context, adminId string) ([]*entity.VotingServer, error)
-	OpenVote(ctx context.Context, serverId string, result string) error
-	ActiveServer(ctx context.Context, serverId string) error
+	OpenVote(ctx context.Context, serverId string, result string) (*entity.VotingServer, error)
+	ActiveServer(ctx context.Context, serverName string) error
 }
 
 type ICandidateRepo interface {

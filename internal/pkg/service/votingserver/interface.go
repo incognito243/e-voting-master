@@ -11,7 +11,7 @@ type IService interface {
 	GetVotingServerByID(ctx context.Context, serverId string) (*ExtendedVotingServer, error)
 	GetAllVotingServers(ctx context.Context) ([]*ExtendedVotingServer, error)
 
-	EndVote(ctx context.Context, adminId, serverId string, msgHex string) (*Candidate, map[string]int64, error)
+	EndVote(ctx context.Context, adminId, serverName, serverId string, msgHex string) (*Candidate, map[string]int64, error)
 	PublishVote(ctx context.Context, serverId string) (map[string]int64, error)
-	ActiveVoting(ctx context.Context, adminId, serverId string, signatureHex string) error
+	ActiveVoting(ctx context.Context, adminId, serverName string, signatureHex string) error
 }

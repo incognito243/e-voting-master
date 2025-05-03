@@ -7,4 +7,5 @@ type InfoUser struct {
 	Verified      bool   `json:"verified"`
 	Email         string `json:"email"`
 	CompressedKey string `json:"compressed_key"`
+	IsAdmin       bool   `json:"is_admin"`
 }

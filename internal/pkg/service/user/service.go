@@ -133,7 +133,28 @@ func (s *Service) LoginUser(ctx context.Context, username string, password strin
 		Verified:      user.Verified,
 		Email:         user.Email,
 		CompressedKey: fmt.Sprintf("%s...%s", user.PublicKey[:6], user.PublicKey[len(user.PublicKey)-4:]),
+		IsAdmin:       user.IsAdmin,
 	}, token, nil
+}
+
+func (s *Service) GetAllUsers(ctx context.Context) ([]*InfoUser, error) {
+	users, err := s.userRepo.GetAll(ctx)
+	if err != nil {
+		logger.Errorf(ctx, "GetAllUsers: get all users error: %v", err)
+		return nil, err
+	}
+	var result []*InfoUser
+	for _, user := range users {
+		result = append(result, &InfoUser{
+			Username:    user.Username,
+			CitizenID:   user.CitizenID,
+			CitizenName: user.CitizenName,
+			Verified:    user.Verified,
+			Email:       user.Email,
+			IsAdmin:     user.IsAdmin,
+		})
+	}
+	return result, nil
 }
 
 func (s *Service) GetUserByUsername(ctx context.Context, username string) (*InfoUser, error) {
@@ -148,6 +169,7 @@ func (s *Service) GetUserByUsername(ctx context.Context, username string) (*Info
 		CitizenName: user.CitizenName,
 		Verified:    user.Verified,
 		Email:       user.Email,
+		IsAdmin:     user.IsAdmin,
 	}, nil
 }
 
@@ -163,6 +185,7 @@ func (s *Service) GetUserByCitizenID(ctx context.Context, citizenID string) (*In
 		CitizenName: user.CitizenName,
 		Verified:    user.Verified,
 		Email:       user.Email,
+		IsAdmin:     user.IsAdmin,
 	}, nil
 }
 
@@ -241,7 +264,7 @@ func (s *Service) Vote(ctx context.Context, username string, serverId string, vo
 		return err
 	}
 
-	if _, err = s.blockchainService.Vote(user.AptosAddress, uint64(index)); err != nil {
+	if _, err = s.blockchainService.Vote(user.AptosAddress, uint64(index), server.ContractAddress); err != nil {
 		logger.Errorf(ctx, "Vote: vote on blockchain error: %v", err)
 		return err
 	}

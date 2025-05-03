@@ -9,10 +9,11 @@ type VotingServer struct {
 	ServerName            string `json:"server_name" gorm:"column:server_name"`
 	ExpTime               int64  `json:"exp_time" gorm:"column:exp_time"`
 
-	ServerId   string `json:"server_id" gorm:"column:server_id"`
-	OpenedVote bool   `json:"opened_vote" gorm:"column:opened_vote"`
-	Results    string `json:"results" gorm:"column:results"`
-	Active     bool   `json:"active" gorm:"column:active"`
+	ContractAddress string `json:"contract_address" gorm:"column:contract_address"`
+	ServerId        string `json:"server_id" gorm:"column:server_id"`
+	OpenedVote      bool   `json:"opened_vote" gorm:"column:opened_vote"`
+	Results         string `json:"results" gorm:"column:results"`
+	Active          bool   `json:"active" gorm:"column:active"`
 }
 
 func (VotingServer) TableName() string {

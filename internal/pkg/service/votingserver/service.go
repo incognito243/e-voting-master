@@ -10,6 +10,7 @@ import (
 	"e-voting-mater/internal/pkg/service/auth"
 	"e-voting-mater/internal/pkg/service/blockchain"
 	"e-voting-mater/pkg/logger"
+	"e-voting-mater/pkg/signature"
 )
 
 type Service struct {
@@ -47,7 +48,7 @@ func Instance() *Service {
 }
 
 func (s *Service) CreateVotingServer(ctx context.Context, votingServer *entity.VotingServer, candidates []*Candidate, msgHex string) error {
-	_, err := s.checkAdminAction(ctx, votingServer.AdminId, votingServer.ServerId, msgHex)
+	_, err := s.checkAdminAction(ctx, votingServer.AdminId, votingServer.ServerName, msgHex)
 	if err != nil {
 		logger.Errorf(ctx, "CreateVotingServer: check admin action error: %v", err)
 		return err
@@ -95,7 +96,7 @@ func (s *Service) CreateVotingServer(ctx context.Context, votingServer *entity.V
 		candidateNames = append(candidateNames, c.CandidateName)
 	}
 
-	txHash, err := s.blockchainService.AddCandidates(candidateNames)
+	txHash, err := s.blockchainService.AddCandidates(candidateNames, votingServer.ContractAddress)
 	if err != nil {
 		logger.Errorf(ctx, "CreateVotingServer: add candidates error: %v", err)
 		return err
@@ -110,14 +111,15 @@ func (s *Service) CreateVotingServer(ctx context.Context, votingServer *entity.V
 
 	for _, user := range users {
 		address := user.AptosAddress
-		if _, err = s.blockchainService.GiveRightToVote(address); err != nil {
+		logger.Infof(ctx, "CreateVotingServer: user address: %v", address)
+		if _, err = s.blockchainService.GiveRightToVote(address, votingServer.ContractAddress); err != nil {
 			logger.Errorf(ctx, "CreateVotingServer: give right to vote error: %v", err)
 			return err
 		}
 	}
 	logger.Infof(ctx, "CreateVotingServer: successfully give vote to user: %v", txHash)
 
-	if _, err = s.blockchainService.StartVote(); err != nil {
+	if _, err = s.blockchainService.StartVote(votingServer.ContractAddress); err != nil {
 		logger.Errorf(ctx, "CreateVotingServer: start vote error: %v", err)
 		return err
 	}
@@ -203,8 +205,8 @@ func (s *Service) GetVotingServerByID(ctx context.Context, serverId string) (*Ex
 	}, nil
 }
 
-func (s *Service) EndVote(ctx context.Context, adminId, serverId string, msgHex string) (*Candidate, map[string]int64, error) {
-	_, err := s.checkAdminAction(ctx, adminId, serverId, msgHex)
+func (s *Service) EndVote(ctx context.Context, adminId, serverName, serverId string, msgHex string) (*Candidate, map[string]int64, error) {
+	_, err := s.checkAdminAction(ctx, adminId, serverName, msgHex)
 	if err != nil {
 		logger.Errorf(ctx, "EndVote: check admin action error: %v", err)
 		return nil, nil, err
@@ -223,7 +225,7 @@ func (s *Service) EndVote(ctx context.Context, adminId, serverId string, msgHex 
 		return nil, nil, err
 	}
 
-	err = s.votingServerRepo.OpenVote(ctx, serverId, string(resultBytes))
+	votingServer, err := s.votingServerRepo.OpenVote(ctx, serverId, string(resultBytes))
 	if err != nil {
 		logger.Errorf(ctx, "EndVote: save voting server error: %v", err)
 		return nil, nil, err
@@ -236,14 +238,14 @@ func (s *Service) EndVote(ctx context.Context, adminId, serverId string, msgHex 
 		return nil, nil, err
 	}
 
-	tx, err := s.blockchainService.EndVote()
+	tx, err := s.blockchainService.EndVote(votingServer.ContractAddress)
 	if err != nil {
 		logger.Errorf(ctx, "EndVote: end vote error: %v", err)
 		return nil, nil, err
 	}
 	logger.Infof(ctx, "EndVote: txHash: %v", tx)
 
-	onChainResults, err := s.blockchainService.GetResults()
+	onChainResults, err := s.blockchainService.GetResults(votingServer.ContractAddress)
 	if err != nil {
 		logger.Errorf(ctx, "EndVote: get results onchain error: %v", err)
 		return nil, nil, err
@@ -257,7 +259,7 @@ func (s *Service) EndVote(ctx context.Context, adminId, serverId string, msgHex 
 		mapResult[candidate.CandidateName] = results.Results[candidate.CandidateIndex]
 	}
 
-	winningCandidate, err := s.blockchainService.WinningCandidate()
+	winningCandidate, err := s.blockchainService.WinningCandidate(votingServer.ContractAddress)
 	if err != nil {
 		logger.Errorf(ctx, "EndVote: get winning candidate error: %v", err)
 		return nil, nil, err
@@ -308,14 +310,14 @@ func (s *Service) PublishVote(ctx context.Context, serverId string) (map[string]
 	return mapResult, nil
 }
 
-func (s *Service) ActiveVoting(ctx context.Context, adminId, serverId string, signatureHex string) error {
-	_, err := s.checkAdminAction(ctx, adminId, serverId, signatureHex)
+func (s *Service) ActiveVoting(ctx context.Context, adminId, serverName string, signatureHex string) error {
+	_, err := s.checkAdminAction(ctx, adminId, serverName, signatureHex)
 	if err != nil {
 		logger.Errorf(ctx, "EndVote: check admin action error: %v", err)
 		return err
 	}
 
-	err = s.votingServerRepo.ActiveServer(ctx, serverId)
+	err = s.votingServerRepo.ActiveServer(ctx, serverName)
 	if err != nil {
 		logger.Errorf(ctx, "EndVote: active voting server error: %v", err)
 		return err
@@ -324,23 +326,23 @@ func (s *Service) ActiveVoting(ctx context.Context, adminId, serverId string, si
 	return nil
 }
 
-func (s *Service) checkAdminAction(ctx context.Context, adminId, serverId string, msgHex string) (*entity.User, error) {
+func (s *Service) checkAdminAction(ctx context.Context, adminId, serverName string, msgHex string) (*entity.User, error) {
 	admin, err := s.userRepo.GetAdminByAdminId(ctx, adminId)
 	if err != nil {
 		logger.Errorf(ctx, "CreateVotingServer: failed to get admin by adminId: %v", err)
 		return nil, err
 	}
 
-	//msg, err := signature.BuildAdminVerifyMessage(adminId, serverId)
-	//if err != nil {
-	//	logger.Errorf(ctx, "CreateVotingServer: failed to build admin verify message: %v", err)
-	//	return nil, err
-	//}
-	//
-	//if err := signature.VerifySignature(admin.PublicKey, msgHex, msg); err != nil {
-	//	logger.Errorf(ctx, "CreateVotingServer: verify signature error: %v", err)
-	//	return nil, err
-	//}
+	msg, err := signature.BuildAdminVerifyMessage(adminId, serverName)
+	if err != nil {
+		logger.Errorf(ctx, "CreateVotingServer: failed to build admin verify message: %v", err)
+		return nil, err
+	}
+
+	if err := signature.VerifySignature(admin.PublicKey, msgHex, msg); err != nil {
+		logger.Errorf(ctx, "CreateVotingServer: verify signature error: %v", err)
+		return nil, err
+	}
 
 	return admin, nil
 }

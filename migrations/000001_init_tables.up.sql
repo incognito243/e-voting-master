@@ -46,6 +46,7 @@ CREATE TABLE voting_servers (
     server_id VARCHAR NOT NULL UNIQUE,
     opened_vote BOOLEAN NOT NULL DEFAULT FALSE,
     results TEXT,
+    contract_address TEXT NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     exp_time BIGINT NOT NULL
 );
