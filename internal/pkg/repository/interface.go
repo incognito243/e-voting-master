@@ -38,3 +38,8 @@ type IConfigRepo interface {
 	Save(ctx context.Context, key, value string) error
 	Get(ctx context.Context, key string) (string, error)
 }
+
+type ITrackingRepo interface {
+	Save(ctx context.Context, tracking *entity.Tracking) error
+	IsExist(ctx context.Context, username, serverId string) (bool, error)
+}

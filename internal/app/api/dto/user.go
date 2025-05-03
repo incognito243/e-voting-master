@@ -43,3 +43,8 @@ type VerifyUsers struct {
 	AdminId      string   `json:"admin_id"`
 	SignatureHex string   `json:"signature_hex"`
 }
+
+type IsVotedRequest struct {
+	Username string `json:"username" form:"username" binding:"required"`
+	ServerId string `json:"server_id" form:"server_id" binding:"required"`
+}

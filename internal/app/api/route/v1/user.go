@@ -23,6 +23,7 @@ func NewUserApi() *UserApi {
 func (a *UserApi) SetupRoute(rg *gin.RouterGroup) {
 	rg.POST("/login", a.login)
 	rg.GET("/", a.getByUsername)
+	rg.GET("/is-voted", a.isVoted)
 	rg.GET("/all", a.getAll)
 	rg.GET("/citizen_id", a.getByCitizenID)
 	rg.POST("/voting", a.voting)
@@ -61,7 +62,7 @@ func (a *UserApi) createUser(c *gin.Context) {
 
 func (a *UserApi) getAll(c *gin.Context) {
 	ctx := c
-	
+
 	userInfo, err := a.userService.GetAllUsers(ctx)
 	if err != nil {
 		response.RespondError(c, 500, err.Error())
@@ -162,4 +163,22 @@ func (a *UserApi) verifyUser(c *gin.Context) {
 	}
 
 	response.RespondSuccess(c, nil)
+}
+
+func (a *UserApi) isVoted(c *gin.Context) {
+	ctx := c
+
+	var params dto.IsVotedRequest
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		response.RespondError(c, 500, err.Error())
+		return
+	}
+
+	isVoted, err := a.userService.IsVoted(ctx, params.Username, params.ServerId)
+	if err != nil {
+		response.RespondError(c, 500, err.Error())
+		return
+	}
+
+	response.RespondSuccess(c, isVoted)
 }

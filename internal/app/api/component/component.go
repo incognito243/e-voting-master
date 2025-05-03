@@ -36,7 +36,8 @@ func InitComponents() error {
 	// Repo
 	userRepo := repository.NewUserRepo(postgresDb)
 	candidateRepo := repository.NewCandidateRepo(postgresDb)
-	votingServer := repository.NewVotingServerRepo(postgresDb)
+	votingServerRepo := repository.NewVotingServerRepo(postgresDb)
+	trackingRepo := repository.NewTrackingRepo(postgresDb)
 
 	// client
 	httpClient := http.NewClient(
@@ -66,7 +67,7 @@ func InitComponents() error {
 		return err
 	}
 	blockchainSrv.NewService(blockChainClient)
-	user.NewService(coreClient, userRepo, candidateRepo, votingServer)
-	votingserver.NewService(votingServer, candidateRepo, userRepo, coreClient)
+	user.NewService(coreClient, userRepo, candidateRepo, votingServerRepo, trackingRepo)
+	votingserver.NewService(votingServerRepo, candidateRepo, userRepo, coreClient)
 	return nil
 }

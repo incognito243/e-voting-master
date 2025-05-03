@@ -56,3 +56,14 @@ CREATE TABLE configs (
     key VARCHAR PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+-- Create tracking table
+CREATE TABLE trackings (
+		id VARCHAR(50) PRIMARY KEY,
+		created_at BIGINT NOT NULL,
+		updated_at BIGINT NOT NULL,
+		created_by VARCHAR,
+		updated_by VARCHAR,
+		username VARCHAR NOT NULL,
+		server_id VARCHAR NOT NULL
+);

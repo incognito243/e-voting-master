@@ -30,6 +30,7 @@ type Service struct {
 	pwService         pw.IService
 	candidateRepo     repository.ICandidateRepo
 	votingServerRepo  repository.IVotingServerRepo
+	trackingRepo      repository.ITrackingRepo
 	blockchainService blockchainSrv.IService
 }
 
@@ -40,6 +41,7 @@ func NewService(
 	userRepo repository.IUserRepo,
 	candidateRepo repository.ICandidateRepo,
 	votingServerRepo repository.IVotingServerRepo,
+	trackingRepo repository.ITrackingRepo,
 ) *Service {
 	if service == nil {
 		service = &Service{
@@ -49,6 +51,7 @@ func NewService(
 			userRepo:          userRepo,
 			candidateRepo:     candidateRepo,
 			votingServerRepo:  votingServerRepo,
+			trackingRepo:      trackingRepo,
 			blockchainService: blockchainSrv.Instance(),
 		}
 	}
@@ -221,6 +224,17 @@ func (s *Service) VerifyUser(ctx context.Context, usernames []string, adminId, s
 }
 
 func (s *Service) Vote(ctx context.Context, username string, serverId string, votingHex string, signatureHex string) error {
+	voted, err := s.trackingRepo.IsExist(ctx, username, serverId)
+	if err != nil {
+		logger.Errorf(ctx, "Vote: check if user voted error: %v", err)
+		return err
+	}
+
+	if voted {
+		logger.Errorf(ctx, "Vote: user already voted")
+		return errors.New("user already voted")
+	}
+
 	if err := s.verifyToken(ctx, username); err != nil {
 		logger.Errorf(ctx, "CreateUser: verify token error: %v", err)
 		return err
@@ -269,7 +283,24 @@ func (s *Service) Vote(ctx context.Context, username string, serverId string, vo
 		return err
 	}
 
+	if err := s.trackingRepo.Save(ctx, &entity.Tracking{
+		Username: username,
+		ServerId: serverId,
+	}); err != nil {
+		logger.Errorf(ctx, "Vote: save tracking error: %v", err)
+		return err
+	}
+
 	return nil
+}
+
+func (s *Service) IsVoted(ctx context.Context, username, serverId string) (bool, error) {
+	voted, err := s.trackingRepo.IsExist(ctx, username, serverId)
+	if err != nil {
+		logger.Errorf(ctx, "IsVoted: check if user voted error: %v", err)
+		return false, err
+	}
+	return voted, nil
 }
 
 func (s *Service) verifyToken(ctx context.Context, username string) error {
