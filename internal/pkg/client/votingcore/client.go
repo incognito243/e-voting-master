@@ -117,3 +117,15 @@ func (c *Client) PublishResult(ctx context.Context, serverId string) (*PublishRe
 
 	return response, nil
 }
+
+//func (c *Client) UserIsExist(ctx context.Context, userIdCore string) (bool, error) {
+//	resp, err := c.httpClient.R().
+//		SetContext(ctx).
+//		SetHeader("x-api-key", c.apiKey).
+//		SetPathParam("server_id", serverId).
+//		SetResult(&response).
+//		Get(c.baseUrl + PublishResultPath)
+//	if err != nil {
+//		return nil, err
+//	}
+//}

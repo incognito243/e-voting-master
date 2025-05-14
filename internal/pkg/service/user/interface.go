@@ -16,4 +16,5 @@ type IService interface {
 	VerifyUser(ctx context.Context, usernames []string, adminId, signatureHex string) error
 	Vote(ctx context.Context, username string, serverId string, votingHex string, signatureHex string) error
 	IsVoted(ctx context.Context, username, serverId string) (bool, error)
+	ActiveUser(ctx context.Context, username string) (bool, error)
 }

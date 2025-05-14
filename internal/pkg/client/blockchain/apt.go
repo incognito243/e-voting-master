@@ -48,7 +48,7 @@ func (a *Client) SendTransaction(payload aptos.TransactionPayload) (string, erro
 	}
 
 	if !tx[0].Success {
-		return "", errors.New("transaction failed")
+		return "", errors.New("simulate transaction failed")
 	}
 
 	signedTxn, err := rawTxn.SignedTransaction(a.sender)

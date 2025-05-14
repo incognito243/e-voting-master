@@ -33,6 +33,7 @@ func (a *UserApi) SetupAdminRoute(rg *gin.RouterGroup) {
 	rg.Use(middleware.RequireAPIKey)
 	rg.PUT("/create", a.createUser)
 	rg.POST("/verify", a.verifyUser)
+	//rg.PUT("/active", a.activeUser)
 }
 
 func (a *UserApi) createUser(c *gin.Context) {
@@ -182,3 +183,21 @@ func (a *UserApi) isVoted(c *gin.Context) {
 
 	response.RespondSuccess(c, isVoted)
 }
+
+//func (a *UserApi) activeUser(c *gin.Context) {
+//	ctx := c
+//
+//	var params dto.ActiveUserRequest
+//	if err := ctx.ShouldBindJSON(&params); err != nil {
+//		response.RespondError(c, 500, err.Error())
+//		return
+//	}
+//
+//	err := a.userService.ActiveUser(ctx, params.Username)
+//	if err != nil {
+//		response.RespondError(c, 500, err.Error())
+//		return
+//	}
+//
+//	response.RespondSuccess(c, nil)
+//}

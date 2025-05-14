@@ -48,6 +48,7 @@ func (a *Voting) createServer(c *gin.Context) {
 		MaximumNumberOfVoters: params.MaximumNumberOfVoters,
 		ServerName:            params.ServerName,
 		ContractAddress:       params.ContractAddress,
+		ExpTime:               params.ExpTime,
 	}, params.Candidates, params.SignatureHex)
 	if err != nil {
 		response.RespondError(c, 500, err.Error())

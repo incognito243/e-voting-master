@@ -48,3 +48,7 @@ type IsVotedRequest struct {
 	Username string `json:"username" form:"username" binding:"required"`
 	ServerId string `json:"server_id" form:"server_id" binding:"required"`
 }
+
+type ActiveUserRequest struct {
+	Username string `json:"username"`
+}

@@ -9,6 +9,7 @@ type CreateVotingServerRequest struct {
 	ServerName            string                    `json:"server_name"`
 	Candidates            []*votingserver.Candidate `json:"candidates"`
 	ContractAddress       string                    `json:"contract_address"`
+	ExpTime               int64                     `json:"exp_time"`
 	SignatureHex          string                    `json:"signature_hex"`
 }
 

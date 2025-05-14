@@ -303,6 +303,11 @@ func (s *Service) IsVoted(ctx context.Context, username, serverId string) (bool,
 	return voted, nil
 }
 
+func (s *Service) ActiveUser(ctx context.Context, username string) (bool, error) {
+	//isExist, err := s.coreClient.CreateUser()
+	return false, nil
+}
+
 func (s *Service) verifyToken(ctx context.Context, username string) error {
 	req, ok := ctx.Value(gin.ContextRequestKey).(*http.Request)
 	if !ok {
